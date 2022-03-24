@@ -24,20 +24,24 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  * Base class for the various sequencer types (single/multi).  Provides
  * common functionality like the management of gating sequences (add/remove) and
  * ownership of the current cursor.
+ * 用于各种序列器类型（单/多）的基类
  */
 public abstract class AbstractSequencer implements Sequencer
 {
     private static final AtomicReferenceFieldUpdater<AbstractSequencer, Sequence[]> SEQUENCE_UPDATER =
         AtomicReferenceFieldUpdater.newUpdater(AbstractSequencer.class, Sequence[].class, "gatingSequences");
-
+    //环形数组长度
     protected final int bufferSize;
+    //等待策略
     protected final WaitStrategy waitStrategy;
+    //游标
     protected final Sequence cursor = new Sequence(Sequencer.INITIAL_CURSOR_VALUE);
+    //门闩序列数组
     protected volatile Sequence[] gatingSequences = new Sequence[0];
 
     /**
      * Create with the specified buffer size and wait strategy.
-     *
+     * 使用指定的缓冲区大小和等待策略创建
      * @param bufferSize   The total number of entries, must be a positive power of 2.
      * @param waitStrategy The wait strategy used by this sequencer
      */
@@ -113,7 +117,7 @@ public abstract class AbstractSequencer implements Sequencer
     /**
      * Creates an event poller for this sequence that will use the supplied data provider and
      * gating sequences.
-     *
+     * 为此序列创建一个事件轮询器，该轮询器将使用提供的数据提供程序和选通序列
      * @param dataProvider    The data source for users of this event poller
      * @param gatingSequences Sequence to be gated on.
      * @return A poller that will gate on this ring buffer and the supplied sequences.

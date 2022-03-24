@@ -22,6 +22,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.LockSupport;
 
+/**
+ * 缓存行填充
+ */
 abstract class SingleProducerSequencerPad extends AbstractSequencer
 {
     protected byte
@@ -39,6 +42,9 @@ abstract class SingleProducerSequencerPad extends AbstractSequencer
     }
 }
 
+/**
+ * 真正使用的字段
+ */
 abstract class SingleProducerSequencerFields extends SingleProducerSequencerPad
 {
     SingleProducerSequencerFields(final int bufferSize, final WaitStrategy waitStrategy)
@@ -49,20 +55,23 @@ abstract class SingleProducerSequencerFields extends SingleProducerSequencerPad
     /**
      * Set to -1 as sequence starting point
      */
+    //指针指向值
     long nextValue = Sequence.INITIAL_VALUE;
+    //消费指向值
     long cachedValue = Sequence.INITIAL_VALUE;
 }
 
 /**
  * Coordinator for claiming sequences for access to a data structure while tracking dependent {@link Sequence}s.
  * Not safe for use from multiple threads as it does not implement any barriers.
- *
+ * 协调器，用于在跟踪依赖序列的同时声明访问数据结构的序列。多线程使用不安全，因为它没有实现任何屏障
  * <p>* Note on {@link Sequencer#getCursor()}:  With this sequencer the cursor value is updated after the call
  * to {@link Sequencer#publish(long)} is made.
  */
 
 public final class SingleProducerSequencer extends SingleProducerSequencerFields
 {
+    //缓存行填充
     protected byte
         p10, p11, p12, p13, p14, p15, p16, p17,
         p20, p21, p22, p23, p24, p25, p26, p27,
@@ -92,13 +101,20 @@ public final class SingleProducerSequencer extends SingleProducerSequencerFields
         return hasAvailableCapacity(requiredCapacity, false);
     }
 
+    /**
+     * 是否有足够的空间
+     * @param requiredCapacity
+     * @param doStore
+     * @return
+     */
     private boolean hasAvailableCapacity(final int requiredCapacity, final boolean doStore)
     {
         long nextValue = this.nextValue;
-
+        //生产者申请的序列值减环长度
         long wrapPoint = (nextValue + requiredCapacity) - bufferSize;
+        //消费者申请的序列值
         long cachedGatingSequence = this.cachedValue;
-
+        // 生产者要申请的序列值大于消费者之前的序列值 且 生产者要申请的序列值减去环的长度要小于消费者的序列值
         if (wrapPoint > cachedGatingSequence || cachedGatingSequence > nextValue)
         {
             if (doStore)
@@ -108,7 +124,7 @@ public final class SingleProducerSequencer extends SingleProducerSequencerFields
 
             long minSequence = Util.getMinimumSequence(gatingSequences, nextValue);
             this.cachedValue = minSequence;
-
+            //生产者申请的序列值减环长度大于minSequence，说明超出消费者一圈
             if (wrapPoint > minSequence)
             {
                 return false;
@@ -139,18 +155,21 @@ public final class SingleProducerSequencer extends SingleProducerSequencerFields
         {
             throw new IllegalArgumentException("n must be > 0 and < bufferSize");
         }
-
+        //指针值
         long nextValue = this.nextValue;
-
+        //下一个指向值
         long nextSequence = nextValue + n;
+        //下一个指向值 减 环长
         long wrapPoint = nextSequence - bufferSize;
+        //缓存的门控序列值
         long cachedGatingSequence = this.cachedValue;
-
+        //下一个指向值 减 环长 大于门控序列值 说明要消费的值太大 要等待 门控序列值大于指向值 要更新
         if (wrapPoint > cachedGatingSequence || cachedGatingSequence > nextValue)
         {
             cursor.setVolatile(nextValue);  // StoreLoad fence
 
             long minSequence;
+            //while 等待
             while (wrapPoint > (minSequence = Util.getMinimumSequence(gatingSequences, nextValue)))
             {
                 LockSupport.parkNanos(1L); // TODO: Use waitStrategy to spin?
@@ -158,7 +177,7 @@ public final class SingleProducerSequencer extends SingleProducerSequencerFields
 
             this.cachedValue = minSequence;
         }
-
+        //更新指向值
         this.nextValue = nextSequence;
 
         return nextSequence;
@@ -196,14 +215,17 @@ public final class SingleProducerSequencer extends SingleProducerSequencerFields
 
     /**
      * @see Sequencer#remainingCapacity()
+     * 剩余容量
      */
     @Override
     public long remainingCapacity()
     {
         long nextValue = this.nextValue;
-
+        //已消费=min(门控序列，指针值)
         long consumed = Util.getMinimumSequence(gatingSequences, nextValue);
+        //已生产=指针值
         long produced = nextValue;
+        //剩余容量
         return getBufferSize() - (produced - consumed);
     }
 

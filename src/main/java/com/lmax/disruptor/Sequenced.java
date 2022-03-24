@@ -1,14 +1,14 @@
 package com.lmax.disruptor;
 
 /**
- * Operations related to the sequencing of items in a {@link RingBuffer}.
+ * Operations related to the sequencing of items in a {@link RingBuffer}. 与RingBuffer中项目排序相关的操作
  * See the two child interfaces, {@link Sequencer} and {@link EventSequencer} for more details.
  */
 public interface Sequenced
 {
     /**
      * The capacity of the data structure to hold entries.
-     *
+     * RingBuffer的容量
      * @return the size of the RingBuffer.
      */
     int getBufferSize();
@@ -16,7 +16,7 @@ public interface Sequenced
     /**
      * Has the buffer got capacity to allocate another sequence.  This is a concurrent
      * method so the response should only be taken as an indication of available capacity.
-     *
+     * 判断是否有给定的可用容量
      * @param requiredCapacity in the buffer
      * @return true if the buffer has the capacity to allocate the next sequence otherwise false.
      */
@@ -24,14 +24,14 @@ public interface Sequenced
 
     /**
      * Get the remaining capacity for this sequencer.
-     *
+     * 获取剩余容量
      * @return The number of slots remaining.
      */
     long remainingCapacity();
 
     /**
      * Claim the next event in sequence for publishing.
-     *
+     * 申请下一个序列值用于发布
      * @return the claimed sequence value
      */
     long next();
@@ -48,7 +48,7 @@ public interface Sequenced
      * }
      * sequencer.publish(lo, hi);
      * </pre>
-     *
+     * 申请下N个序列值用于发布
      * @param n the number of sequences to claim
      * @return the highest claimed sequence value
      */
@@ -58,7 +58,7 @@ public interface Sequenced
      * Attempt to claim the next event in sequence for publishing.  Will return the
      * number of the slot if there is at least <code>requiredCapacity</code> slots
      * available.
-     *
+     * 尝试按顺序声明下一个事件以进行发布。如果至少有所需容量的插槽可用，将返回插槽的编号
      * @return the claimed sequence value
      * @throws InsufficientCapacityException thrown if there is no space available in the ring buffer.
      */
@@ -69,7 +69,7 @@ public interface Sequenced
      * highest numbered slot if there is at least <code>requiredCapacity</code> slots
      * available.  Have a look at {@link Sequencer#next()} for a description on how to
      * use this method.
-     *
+     * 尝试按顺序声明接下来的n个事件以进行发布
      * @param n the number of sequences to claim
      * @return the claimed sequence value
      * @throws InsufficientCapacityException thrown if there is no space available in the ring buffer.
@@ -78,14 +78,14 @@ public interface Sequenced
 
     /**
      * Publishes a sequence. Call when the event has been filled.
-     *
+     * 在给定的序列值上发布事件
      * @param sequence the sequence to be published.
      */
     void publish(long sequence);
 
     /**
      * Batch publish sequences.  Called when all of the events have been filled.
-     *
+     * 批量发布序列
      * @param lo first sequence number to publish
      * @param hi last sequence number to publish
      */

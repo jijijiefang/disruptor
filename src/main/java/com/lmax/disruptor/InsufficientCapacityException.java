@@ -19,7 +19,7 @@ package com.lmax.disruptor;
  * Exception thrown when it is not possible to insert a value into
  * the ring buffer without it wrapping the consuming sequences.  Used
  * specifically when claiming with the {@link RingBuffer#tryNext()} call.
- *
+ * 在不包装消费序列的情况下，无法将值插入环形缓冲区时引发异常。在使用RingBuffer声明时特别使用。tryNext调用
  * <p>For efficiency this exception will not have a stack trace.
  */
 @SuppressWarnings({"serial", "lgtm[java/non-sync-override]"})

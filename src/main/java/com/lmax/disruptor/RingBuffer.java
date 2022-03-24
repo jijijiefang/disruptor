@@ -18,6 +18,9 @@ package com.lmax.disruptor;
 
 import com.lmax.disruptor.dsl.ProducerType;
 
+/**
+ * 环形数组填充
+ */
 abstract class RingBufferPad
 {
     protected byte
@@ -30,12 +33,19 @@ abstract class RingBufferPad
         p70, p71, p72, p73, p74, p75, p76, p77;
 }
 
+/**
+ * 环形数组字段
+ * @param <E>
+ */
 abstract class RingBufferFields<E> extends RingBufferPad
 {
     private static final int BUFFER_PAD = 32;
 
+    //索引掩码
     private final long indexMask;
+    //数组
     private final E[] entries;
+    //元素个数
     protected final int bufferSize;
     protected final Sequencer sequencer;
 
@@ -57,20 +67,32 @@ abstract class RingBufferFields<E> extends RingBufferPad
         }
 
         this.indexMask = bufferSize - 1;
+        //初始化数组，数组长度为元素个数+2*32
         this.entries = (E[]) new Object[sequencer.getBufferSize() + 2 * BUFFER_PAD];
         fill(eventFactory);
     }
 
+    /**
+     * 填充数组
+     * @param eventFactory
+     */
     private void fill(final EventFactory<E> eventFactory)
     {
         for (int i = 0; i < bufferSize; i++)
         {
+            //使用事件工厂新实例填充数组
             entries[BUFFER_PAD + i] = eventFactory.newInstance();
         }
     }
 
+    /**
+     * 获取数组中的元素
+     * @param sequence
+     * @return
+     */
     protected final E elementAt(final long sequence)
     {
+        //序列和索引掩码与操作，相当于序列对索引掩码取模操作，获取数组中的下标
         return entries[BUFFER_PAD + (int) (sequence & indexMask)];
     }
 }
