@@ -17,14 +17,14 @@ package com.lmax.disruptor;
 
 /**
  * Called by the {@link RingBuffer} to pre-populate all the events to fill the RingBuffer.
- *
- * @param <T> event implementation storing the data for sharing during exchange or parallel coordination of an event.
+ * 由RingBuffer调用以预填充所有事件以填充RingBuffer。
+ * @param <T> event implementation storing the data for sharing during exchange or parallel coordination of an event.事件执行存储数据，以便在事件交换或并行协调期间共享
  */
 public interface EventFactory<T>
 {
     /**
      * Implementations should instantiate an event object, with all memory already allocated where possible.
-     *
+     * 实现应该实例化一个事件对象，并尽可能地分配所有内存
      * @return T newly constructed event instance.
      */
     T newInstance();

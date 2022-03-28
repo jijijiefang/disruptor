@@ -51,6 +51,9 @@ public final class BlockingWaitStrategy implements WaitStrategy
         return availableSequence;
     }
 
+    /**
+     * 唤醒所有阻塞的线程
+     */
     @Override
     public void signalAllWhenBlocking()
     {
