@@ -27,6 +27,7 @@ import java.util.concurrent.locks.LockSupport;
  * Latency spikes can occur after quiet periods.  It will also reduce the impact
  * on the producing thread as it will not need signal any conditional variables
  * to wake up the event handling thread.
+ * 这个策略是性能和CPU资源之间的一个很好的折衷方案。潜伏期峰值可能在安静期后出现。它还将减少对生成线程的影响，因为它不需要向任何条件变量发送信号来唤醒事件处理线程。
  */
 public final class SleepingWaitStrategy implements WaitStrategy
 {

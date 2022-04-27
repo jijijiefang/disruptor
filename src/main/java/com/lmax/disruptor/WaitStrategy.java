@@ -18,6 +18,7 @@ package com.lmax.disruptor;
 
 /**
  * Strategy employed for making {@link EventProcessor}s wait on a cursor {@link Sequence}.
+ * 使事件处理器等待游标序列的策略
  */
 public interface WaitStrategy
 {
@@ -27,7 +28,9 @@ public interface WaitStrategy
      * use for this is to signal a timeout.  Any EventProcessor that is using a WaitStrategy to get notifications
      * about message becoming available should remember to handle this case.  The {@link BatchEventProcessor} explicitly
      * handles this case and will signal a timeout if required.
-     *
+     * 等待给定的序列可用。根据WaitStrategy的实现，此方法返回的值可能小于提供的序列号。这种方法的一个常见用途是发出超时信号。
+     * 任何使用WaitStrategy获取消息可用通知的EventProcessor都应该记住处理这种情况。
+     * BatchEventProcessor会显式处理这种情况，并在需要时发出超时信号。
      * @param sequence          to be waited on.
      * @param cursor            the main sequence from ringbuffer. Wait/notify strategies will
      *                          need this as it's the only sequence that is also notified upon update.
@@ -43,6 +46,7 @@ public interface WaitStrategy
 
     /**
      * Implementations should signal the waiting {@link EventProcessor}s that the cursor has advanced.
+     * 实现应该向等待的事件处理器发出游标已前进的信号
      */
     void signalAllWhenBlocking();
 }
